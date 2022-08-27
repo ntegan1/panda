@@ -206,8 +206,18 @@ static int toyota_tx_hook(CANPacket_t *to_send, bool longitudinal_allowed) {
       int desired_torque = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
       desired_torque = to_signed(desired_torque, 16);
       bool steer_req = GET_BIT(to_send, 0U) != 0U;
+      bool steer_req_mismatch = (desired_torque != 0) && !steer_req;
       if (steer_torque_cmd_checks(desired_torque, -1, TOYOTA_STEERING_LIMITS)) {
         tx = 0;
+        toyota_steer_req_matches = 0U;
+      } else if (!steer_req_mismatch) {
+        toyota_steer_req_matches = MIN(toyota_steer_req_matches + 1U, 255U);
+      } else { // do have steer req mismatch
+        if (toyota_steer_req_matches < (TOYOTA_MAX_STEER_RATE_FRAMES - 1U)) {
+          tx = 0;
+          torque_measurements_reset(microsecond_timer_get());
+        }
+        toyota_steer_req_matches = 0U;
       }
     }
   }
