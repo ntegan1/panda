@@ -213,7 +213,7 @@ static int toyota_tx_hook(CANPacket_t *to_send, bool longitudinal_allowed) {
       desired_torque = to_signed(desired_torque, 16);
       bool steer_req = GET_BIT(to_send, 0U) != 0U;
       bool steer_req_mismatch = (desired_torque != 0) && !steer_req;
-      if (steer_torque_cmd_checks(desired_torque, steer_req, TOYOTA_STEERING_LIMITS)) {
+      if (steer_torque_cmd_checks(desired_torque, -1, TOYOTA_STEERING_LIMITS)) {
         tx = 0;
         toyota_valid_steering_frame_count = 0U;
       } else if (!steer_req_mismatch) {
