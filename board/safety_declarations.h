@@ -214,6 +214,9 @@ struct sample_t angle_meas;         // last 6 steer angles
 // See ISO 15622:2018 for more information.
 #define ALT_EXP_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX 8
 
+// For PCM cars, allow controls_allowed when !cruise_engaged.
+#define ALT_EXP_PCM_ALLOW_LKAS_ONLY_MODE 16
+
 int alternative_experience = 0;
 
 // time since safety mode has been changed

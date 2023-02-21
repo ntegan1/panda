@@ -82,7 +82,9 @@ int safety_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
 }
 
 bool get_longitudinal_allowed(void) {
-  return controls_allowed && !gas_pressed_prev;
+  return controls_allowed && !gas_pressed_prev && 
+    ((alternative_experience & ALT_EXP_PCM_ALLOW_LKAS_ONLY_MODE) ?
+     cruise_engaged_prev : true);
 }
 
 // Given a CRC-8 poly, generate a static lookup table to use with a fast CRC-8
@@ -636,7 +638,7 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
 
 void pcm_cruise_check(bool cruise_engaged) {
   // Enter controls on rising edge of stock ACC, exit controls if stock ACC disengages
-  if (!cruise_engaged) {
+  if (!cruise_engaged && !(alternative_experience & ALT_EXP_PCM_ALLOW_LKAS_ONLY_MODE)) {
     controls_allowed = false;
   }
   if (cruise_engaged && !cruise_engaged_prev) {
