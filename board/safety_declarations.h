@@ -173,6 +173,7 @@ bool brake_pressed = false;
 bool brake_pressed_prev = false;
 bool regen_braking = false;
 bool regen_braking_prev = false;
+bool cruise_engaged_now = false;
 bool cruise_engaged_prev = false;
 float vehicle_speed = 0;
 bool vehicle_moving = false;
@@ -213,6 +214,9 @@ struct sample_t angle_meas;         // last 6 steer angles
 // Setting this flag is used for allowing the full -5.0 to +4.0 m/s^2 at lower speeds
 // See ISO 15622:2018 for more information.
 #define ALT_EXP_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX 8
+
+// For PCM cars, allow controls_allowed when !cruise_engaged.
+#define ALT_EXP_PCM_ALLOW_LKAS_ONLY_MODE 16
 
 int alternative_experience = 0;
 
