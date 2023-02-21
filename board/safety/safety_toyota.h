@@ -37,6 +37,7 @@ AddrCheckStruct toyota_addr_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
   {.msg = {{0x1D2, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
   {.msg = {{0x224, 0, 8, .check_checksum = false, .expected_timestep = 25000U},
+  {.msg = {{0x1D3, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
            {0x226, 0, 8, .check_checksum = false, .expected_timestep = 25000U}, { 0 }}},
 };
 #define TOYOTA_ADDR_CHECKS_LEN (sizeof(toyota_addr_checks) / sizeof(toyota_addr_checks[0]))
@@ -97,11 +98,19 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     if (addr == 0x1D2) {
       // 5th bit is CRUISE_ACTIVE
       bool cruise_engaged = GET_BIT(to_push, 5U) != 0U;
+      cruise_engaged_now = cruise_engaged;
       pcm_cruise_check(cruise_engaged);
 
       // sample gas pedal
       if (!gas_interceptor_detected) {
         gas_pressed = ((GET_BYTE(to_push, 0) >> 4) & 1U) == 0U;
+      }
+    }
+
+    if (addr == 0x1D3) {
+      acc_main_on = (GET_BYTE(to_push, 1) & 0x80) > 0;
+      if (!acc_main_on) {
+        controls_allowed = 0;
       }
     }
 

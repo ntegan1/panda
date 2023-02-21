@@ -82,9 +82,9 @@ int safety_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
 }
 
 bool get_longitudinal_allowed(void) {
-  return controls_allowed && !gas_pressed_prev && 
+  return controls_allowed && !gas_pressed_prev &&
     ((alternative_experience & ALT_EXP_PCM_ALLOW_LKAS_ONLY_MODE) ?
-     cruise_engaged_prev : true);
+     cruise_engaged_now : true);
 }
 
 // Given a CRC-8 poly, generate a static lookup table to use with a fast CRC-8
@@ -323,6 +323,7 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
   brake_pressed_prev = false;
   regen_braking = false;
   regen_braking_prev = false;
+  cruise_engaged_now = false;
   cruise_engaged_prev = false;
   vehicle_speed = 0;
   vehicle_moving = false;
