@@ -1,9 +1,9 @@
 const SteeringLimits TOYOTA_STEERING_LIMITS = {
   .max_steer = 1500,
-  .max_rate_up = 15,          // ramp up slow
-  .max_rate_down = 25,        // ramp down fast
-  .max_torque_error = 350,    // max torque cmd in excess of motor torque
-  .max_rt_delta = 450,        // the real time limit is 1800/sec, a 20% buffer
+  .max_rate_up = 17,          // ramp up slow
+  .max_rate_down = 32,        // ramp down fast
+  .max_torque_error = 600,    // max torque cmd in excess of motor torque
+  .max_rt_delta = 750,        // the real time limit is 1800/sec, a 20% buffer
   .max_rt_interval = 250000,
   .type = TorqueMotorLimited,
 
