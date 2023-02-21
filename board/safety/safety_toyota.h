@@ -36,6 +36,7 @@ AddrCheckStruct toyota_addr_checks[] = {
   {.msg = {{ 0xaa, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
   {.msg = {{0x1D2, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
+  {.msg = {{0x1D3, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
   {.msg = {{0x224, 0, 8, .check_checksum = false, .expected_timestep = 25000U},
            {0x226, 0, 8, .check_checksum = false, .expected_timestep = 25000U}, { 0 }}},
 };
@@ -104,6 +105,13 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
         gas_pressed = ((GET_BYTE(to_push, 0) >> 4) & 1U) == 0U;
       }
     }
+
+    if (addr == 0x1D3) {
+      acc_main_on = (GET_BYTE(to_push, 1) & 0x80) > 0;
+      if (!acc_main_on) {
+        controls_allowed = 0;
+      }
+    }  
 
     if (addr == 0xaa) {
       // check that all wheel speeds are at zero value with offset
