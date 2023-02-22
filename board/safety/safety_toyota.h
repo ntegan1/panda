@@ -111,6 +111,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       acc_main_on = (GET_BYTE(to_push, 1) & 0x80) > 0;
       if (!acc_main_on) {
         controls_allowed = 0;
+        auto_resume_lat = false;
       }
     }
 
@@ -224,6 +225,7 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
 }
 
 static const addr_checks* toyota_init(uint16_t param) {
+  auto_resume_lat = false;
   gas_interceptor_detected = 0;
   toyota_alt_brake = GET_FLAG(param, TOYOTA_PARAM_ALT_BRAKE);
   toyota_stock_longitudinal = GET_FLAG(param, TOYOTA_PARAM_STOCK_LONGITUDINAL);

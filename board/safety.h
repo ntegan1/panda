@@ -175,10 +175,12 @@ void safety_tick(const addr_checks *rx_checks) {
       rx_checks->check[i].lagging = lagging;
       if (lagging) {
         controls_allowed = 0;
+        auto_resume_lat = false;
       }
 
       if (lagging || !is_msg_valid(rx_checks->check, i)) {
         rx_checks_invalid = true;
+        auto_resume_lat = false;
       }
     }
   }
@@ -201,6 +203,7 @@ bool is_msg_valid(AddrCheckStruct addr_list[], int index) {
     if ((!addr_list[index].valid_checksum) || (addr_list[index].wrong_counters >= MAX_WRONG_COUNTERS)) {
       valid = false;
       controls_allowed = 0;
+      auto_resume_lat = false;
     }
   }
   return valid;
@@ -247,29 +250,42 @@ void generic_rx_checks(bool stock_ecu_detected) {
   // exit controls on rising edge of gas press
   if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS)) {
     controls_allowed = 0;
+    auto_resume_lat = false;
   }
   gas_pressed_prev = gas_pressed;
 
   // exit controls on rising edge of brake press
   if (brake_pressed && (!brake_pressed_prev || vehicle_moving)) {
     controls_allowed = 0;
+    auto_resume_lat = true;
+  } else if (!brake_pressed && brake_pressed_prev && auto_resume_lat) {
+    // this could be unsafe as it relies on toyota's
+    // cruise_engaged to prevent long messages from
+    // being sent.
+    // Should be fine though as we can't inadvertently
+    // re-enable cruise_engaged from op's side.
+    controls_allowed = 1;
+    auto_resume_lat = false;
   }
   brake_pressed_prev = brake_pressed;
 
   // exit controls on rising edge of regen paddle
   if (regen_braking && (!regen_braking_prev || vehicle_moving)) {
     controls_allowed = 0;
+    auto_resume_lat = false;
   }
   regen_braking_prev = regen_braking;
 
   // check if stock ECU is on bus broken by car harness
   if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && stock_ecu_detected) {
+    auto_resume_lat = false;
     relay_malfunction_set();
   }
 }
 
 void relay_malfunction_set(void) {
   relay_malfunction = true;
+  auto_resume_lat = false;
   fault_occurred(FAULT_RELAY_MALFUNCTION);
 }
 
@@ -346,6 +362,7 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
   angle_meas.max = 0;
 
   controls_allowed = false;
+  auto_resume_lat = false;
   relay_malfunction_reset();
   safety_rx_checks_invalid = false;
 
@@ -643,6 +660,7 @@ void pcm_cruise_check(bool cruise_engaged) {
     controls_allowed = false;
   }
   if (cruise_engaged && !cruise_engaged_prev) {
+    auto_resume_lat = false;
     controls_allowed = true;
   }
   cruise_engaged_prev = cruise_engaged;
